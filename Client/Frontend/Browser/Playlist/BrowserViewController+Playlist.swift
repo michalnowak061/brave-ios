@@ -13,74 +13,82 @@ private let log = Logger.browserLogger
 
 extension BrowserViewController: PlaylistHelperDelegate {
     
-    func showPlaylistPopover(state: PlaylistPopoverState) {
-        let popover = PopoverController(contentController: PlaylistPopoverViewController(state: state))
-        popover.present(from: topToolbar.locationView.playlistButton, on: self)
+    func updatePlaylistURLBar(tab: Tab?, state: PlaylistItemAddedState, item: PlaylistInfo?) {
+        openInPlayListActivity(info: state == .existingItem ? item : nil)
+        addToPlayListActivity(info: state == .newItem ? item : nil, itemDetected: state == .newItem)
+        
+        if let selectedTab = tabManager.selectedTab {
+            selectedTab.playlistItemState = state
+            selectedTab.playlistItem = item
+            
+            let playlistButton = topToolbar.locationView.playlistButton
+            switch state {
+            case .none:
+                playlistButton.buttonState = .none
+            case .newItem:
+                playlistButton.buttonState = .addToPlaylist
+            case .existingItem:
+                playlistButton.buttonState = .addedToPlaylist
+            }
+        } else {
+            topToolbar.locationView.playlistButton.buttonState = .none
+        }
+        
+        //selectedTab.url?.isPlaylistSupportedSiteURL == true
     }
     
-    func showPlaylistAlert(_ alertController: UIAlertController) {
-        self.present(alertController, animated: true)
-    }
-    
-    func showPlaylistToast(info: PlaylistInfo, itemState: PlaylistItemAddedState) {
+    func showPlaylistPopover(tab: Tab?, state: PlaylistPopoverState) {
         guard Preferences.Playlist.showToastForAdd.value,
-              let selectedTab = tabManager.selectedTab,
-              selectedTab.url?.isPlaylistSupportedSiteURL == true else {
+              let selectedTab = tabManager.selectedTab else {
             return
         }
         
-        switch itemState {
-        case .added, .existing:
-            topToolbar.locationView.playlistButton.buttonState = .addedToPlaylist
-        case .pendingUserAction:
-            topToolbar.locationView.playlistButton.buttonState = .addToPlaylist
-        }
-        
-        /*
-        // Item requires the user to choose whether or not to add it to playlists
-        let toast = PlaylistToast(item: info, state: itemState, completion: { [weak self] buttonPressed in
-            guard let self = self, let item = self.playlistToast?.item else { return }
-            
-            switch itemState {
-            // Item requires user action to add it to playlists
-            case .pendingUserAction:
-                if buttonPressed {
-                    // Update playlist with new items..
+        let popover = PopoverController(contentController: PlaylistPopoverViewController(state: state).then {
+            $0.rootView.onPrimaryButtonPressed = { [weak self] in
+                guard let self = self,
+                      let item = selectedTab.playlistItem else { return }
+                
+                switch state {
+                case .addToPlaylist:
+                    // Dismiss popover
+                    UIImpactFeedbackGenerator(style: .medium).bzzt()
+                    self.dismiss(animated: true, completion: nil)
+                    
+                    // Update playlist with new items.
                     self.addToPlaylist(item: item) { [weak self] didAddItem in
                         guard let self = self else { return }
                         
-                        log.debug("Playlist Item Added")
-                        self.playlistToast = nil
-                        
                         if didAddItem {
-                            self.showPlaylistToast(info: item, itemState: .added)
-                            UIImpactFeedbackGenerator(style: .medium).bzzt()
+                            self.updatePlaylistURLBar(tab: tab, state: .existingItem, item: item)
                         }
                     }
-                } else {
-                    self.playlistToast = nil
-                }
-                
-            // Item already exists in playlist, so ask them if they want to view it there
-            // Item was added to playlist by the user, so ask them if they want to view it there
-            case .added, .existing:
-                if buttonPressed {
-                    self.openPlaylist()
+                    
+                case .addedToPlaylist:
+                    // Dismiss popover
                     UIImpactFeedbackGenerator(style: .medium).bzzt()
+                    
+                    self.dismiss(animated: true) {
+                        DispatchQueue.main.async {
+                            self.openPlaylist()
+                        }
+                    }
                 }
+            }
+            
+            $0.rootView.onSecondaryButtonPressed = {
+                guard let item = selectedTab.playlistItem else { return }
+                UIImpactFeedbackGenerator(style: .medium).bzzt()
                 
-                self.playlistToast = nil
+                self.dismiss(animated: true) {
+                    DispatchQueue.main.async {
+                        if PlaylistManager.shared.delete(item: item) {
+                            self.updatePlaylistURLBar(tab: tab, state: .newItem, item: item)
+                        }
+                    }
+                }
             }
         })
-        
-        playlistToast = toast
-        let duration = itemState == .pendingUserAction ? 10 : 5
-        show(toast: toast, afterWaiting: .milliseconds(250), duration: .seconds(duration))
-         */
-    }
-    
-    func dismissPlaylistToast(animated: Bool) {
-        playlistToast?.dismiss(false, animated: animated)
+        popover.present(from: topToolbar.locationView.playlistButton, on: self)
     }
     
     private func openPlaylist() {

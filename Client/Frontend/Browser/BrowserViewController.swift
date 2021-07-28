@@ -116,7 +116,6 @@ class BrowserViewController: UIViewController {
 
     var pendingToast: Toast? // A toast that might be waiting for BVC to appear before displaying
     var downloadToast: DownloadToast? // A toast that is showing the combined download progress
-    var playlistToast: PlaylistToast? // A toast displayed when a playlist item is updated or added
     var addToPlayListActivityItem: (enabled: Bool, item: PlaylistInfo?)? // A boolean to determine If AddToListActivity should be added
     var openInPlaylistActivityItem: (enabled: Bool, item: PlaylistInfo?)? // A boolean to determine if OpenInPlaylistActivity should be shown
 
@@ -1504,6 +1503,7 @@ class BrowserViewController: UIViewController {
         }
         
         updateRewardsButtonState()
+        updatePlaylistURLBar(tab: tab, state: tab.playlistItemState, item: tab.playlistItem)
         
         topToolbar.currentURL = tab.url?.displayURL
         if tabManager.selectedTab === tab {
@@ -1627,9 +1627,7 @@ class BrowserViewController: UIViewController {
             // Update playlist with new items..
             self.addToPlaylist(item: item) { [weak self] didAddItem in
                 guard let self = self else { return }
-                
-                log.debug("Playlist Item Added")
-                self.showPlaylistToast(info: item, itemState: .added)
+                self.updatePlaylistURLBar(tab: tab, state: .existingItem, item: item)
                 UIImpactFeedbackGenerator(style: .medium).bzzt()
                 
             }
@@ -1640,9 +1638,7 @@ class BrowserViewController: UIViewController {
             
             // Update playlist with new items..
             self.openInPlaylist(item: item) {
-                log.debug("Playlist Item Opened")
                 UIImpactFeedbackGenerator(style: .medium).bzzt()
-                
             }
         }
         
@@ -2847,8 +2843,6 @@ extension BrowserViewController: PreferencesObserver {
             backgroundDataSource.startFetching()
         case Preferences.Playlist.webMediaSourceCompatibility.key:
             if UIDevice.isIpad {
-                playlistToast?.dismiss(false)
-                
                 tabManager.allTabs.forEach {
                     $0.userScriptManager?.isWebCompatibilityMediaSourceAPIEnabled = Preferences.Playlist.webMediaSourceCompatibility.value
                     $0.webView?.reload()

@@ -92,10 +92,10 @@ extension BrowserViewController: TopToolbarDelegate {
         let state = urlBar.locationView.playlistButton.buttonState
         switch state {
         case .addToPlaylist:
-            showPlaylistPopover(state: .addToPlaylist)
+            showPlaylistPopover(tab: tabManager.selectedTab, state: .addToPlaylist)
             break
         case .addedToPlaylist:
-            showPlaylistPopover(state: .addedToPlaylist)
+            showPlaylistPopover(tab: tabManager.selectedTab, state: .addedToPlaylist)
             break
         case .none:
             break

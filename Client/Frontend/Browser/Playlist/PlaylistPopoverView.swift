@@ -17,6 +17,9 @@ struct PlaylistPopoverView: View {
     @State
     var state: PlaylistPopoverState
     
+    var onPrimaryButtonPressed: (() -> Void)?
+    var onSecondaryButtonPressed: (() -> Void)?
+    
     var body: some View {
         if state == .addToPlaylist {
             addToPlaylistView
@@ -45,7 +48,9 @@ struct PlaylistPopoverView: View {
             
             Spacer(minLength: 20.0)
 
-            Button(action: {}) {
+            Button(action: {
+                onPrimaryButtonPressed?()
+            }) {
                 if #available(iOS 14.0, *) {
                     Text(Strings.PlayList.addToPlayListAlertTitle)
                         .font(.title3.weight(.medium))
@@ -84,7 +89,9 @@ struct PlaylistPopoverView: View {
             
             Spacer(minLength: 20.0)
             
-            Button(action: {}) {
+            Button(action: {
+                onPrimaryButtonPressed?()
+            }) {
                 if #available(iOS 14.0, *) {
                     Text(Strings.PlayList.playlistPopoverOpenInBravePlaylist)
                         .font(.title3.weight(.medium))
@@ -105,7 +112,9 @@ struct PlaylistPopoverView: View {
             
             Spacer(minLength: 20.0)
 
-            Button(action: {}) {
+            Button(action: {
+                onSecondaryButtonPressed?()
+            }) {
                 if #available(iOS 14.0, *) {
                     Text(Strings.PlayList.playlistPopoverRemoveFromBravePlaylist)
                         .font(.title3.weight(.medium))
