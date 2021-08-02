@@ -31,8 +31,8 @@ extension DataSource {
     /// from `sections[x].rows[y]`
     func indexPath(rowUUID: String, sectionUUID: String) -> IndexPath? {
         guard let section = sections.firstIndex(where: { $0.uuid == sectionUUID }),
-            let row = sections[section].rows.firstIndex(where: { $0.uuid == rowUUID }) else {
-                return nil
+              let row = sections[section].rows.firstIndex(where: { $0.uuid == rowUUID }) else {
+            return nil
         }
         return IndexPath(row: row, section: section)
     }
@@ -135,7 +135,7 @@ class SettingsViewController: TableViewController {
         if let debugSection = debugSection {
             list.append(debugSection)
         }
-
+        
         return list
     }
     
@@ -198,7 +198,7 @@ class SettingsViewController: TableViewController {
             }, image: #imageLiteral(resourceName: "settings-brave-today").template, accessory: .disclosureIndicator)
         )
         #endif
-         
+        
         vpnRow = vpnSettingsRow()
         if let vpnRow = vpnRow {
             section.rows.append(vpnRow)
@@ -234,8 +234,8 @@ class SettingsViewController: TableViewController {
                     } else {
                         self.navigationController?.pushViewController(SyncWelcomeViewController(), animated: true)
                     }
-                    }, image: #imageLiteral(resourceName: "settings-sync").template, accessory: .disclosureIndicator,
-                       cellClass: MultilineValue1Cell.self),
+                }, image: #imageLiteral(resourceName: "settings-sync").template, accessory: .disclosureIndicator,
+                cellClass: MultilineValue1Cell.self),
                 .boolRow(title: Strings.bookmarksLastVisitedFolderTitle, option: Preferences.General.showLastVisitedBookmarksFolder, image: #imageLiteral(resourceName: "menu_folder_open").template),
                 Row(text: Strings.Shortcuts.shortcutSettingsTitle, selection: { [unowned self] in
                     self.navigationController?.pushViewController(ShortcutSettingsViewController(), animated: true)
@@ -265,7 +265,7 @@ class SettingsViewController: TableViewController {
                      option: Preferences.General.enablePullToRefresh,
                      image: #imageLiteral(resourceName: "settings-pull-to-refresh").template)
         )
-
+        
         return general
     }()
     
@@ -293,12 +293,12 @@ class SettingsViewController: TableViewController {
         display.rows.append(row)
         
         display.rows.append(Row(text: Strings.NTP.settingsTitle,
-            selection: { [unowned self] in
-                self.navigationController?.pushViewController(NTPTableViewController(), animated: true)
-            },
-            image: #imageLiteral(resourceName: "settings-ntp").template,
-            accessory: .disclosureIndicator,
-            cellClass: MultilineValue1Cell.self
+                                selection: { [unowned self] in
+                                    self.navigationController?.pushViewController(NTPTableViewController(), animated: true)
+                                },
+                                image: #imageLiteral(resourceName: "settings-ntp").template,
+                                accessory: .disclosureIndicator,
+                                cellClass: MultilineValue1Cell.self
         ))
         
         if UIDevice.current.userInterfaceIdiom == .pad {
@@ -353,7 +353,10 @@ class SettingsViewController: TableViewController {
                      image: #imageLiteral(resourceName: "settings-bookmarks-shortcut").template),
             .boolRow(title: Strings.hideRewardsIcon,
                      option: Preferences.Rewards.hideRewardsIcon,
-                     image: #imageLiteral(resourceName: "settings-rewards-icon").template)
+                     image: #imageLiteral(resourceName: "settings-rewards-icon").template),
+            .boolRow(title: Strings.hideStatusBar,
+                     option: Preferences.General.hideSystemStatusBar,
+                     image: #imageLiteral(resourceName: "settings-hide-statusbar").template)
         ])
         
         return display
@@ -396,10 +399,10 @@ class SettingsViewController: TableViewController {
             
             guard let vcToShow = vc else { return }
             self.navigationController?.pushViewController(vcToShow, animated: true)
-            }, image: #imageLiteral(resourceName: "settings-vpn").template, accessory: .disclosureIndicator,
-               cellClass: ColoredDetailCell.self, context: [ColoredDetailCell.colorKey: color], uuid: "vpnrow")
+        }, image: #imageLiteral(resourceName: "settings-vpn").template, accessory: .disclosureIndicator,
+        cellClass: ColoredDetailCell.self, context: [ColoredDetailCell.colorKey: color], uuid: "vpnrow")
     }
-
+    
     private lazy var securitySection: Static.Section = {
         return Section(
             header: .title(Strings.security),
@@ -425,7 +428,7 @@ class SettingsViewController: TableViewController {
                     selection: { [unowned self] in
                         // Rate Brave
                         guard let writeReviewURL = URL(string: "https://itunes.apple.com/app/id1052879175?action=write-review")
-                            else { return }
+                        else { return }
                         UIApplication.shared.open(writeReviewURL)
                         self.dismiss(animated: true)
                     },
@@ -479,7 +482,7 @@ class SettingsViewController: TableViewController {
                         $0.url = url.appendingPathComponent("about").appendingPathComponent("license")
                     }
                     self.navigationController?.pushViewController(licenses, animated: true)
-                    }, accessory: .disclosureIndicator)
+                }, accessory: .disclosureIndicator)
             ]
         )
     }()

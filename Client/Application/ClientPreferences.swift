@@ -68,6 +68,8 @@ extension Preferences {
         static let themeNormalMode = Option<String>(key: "general.normal-mode-theme", default: DefaultTheme.system.rawValue)
         /// Specifies whether the bookmark button is present on toolbar
         static let showBookmarkToolbarShortcut = Option<Bool>(key: "general.show-bookmark-toolbar-shortcut", default: UIDevice.isIpad)
+        /// Specifies whether the system status bar will be automatically hidden when scrolling the page
+        static let hideSystemStatusBar = Option<Bool>(key: "general.hide-system-statusbar", default: true)
         /// Sets Desktop UA for iPad by default (iOS 13+ & iPad only).
         /// Do not read it directly, prefer to use `UserAgent.shouldUseDesktopMode` instead.
         static let alwaysRequestDesktopSite = Option<Bool>(key: "general.always-request-desktop-site", default: UIDevice.isIpad)
